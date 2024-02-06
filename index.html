@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Feature Prediction Form</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 20px;
+            background-color: #f4f4f4;
+        }
+
+        h1 {
+            color: #3498db;
+            text-align: center;
+        }
+
+        form {
+            background-color: #ecf0f1;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #3498db;
+        }
+
+        input {
+            width: calc(100% - 16px);
+            padding: 8px;
+            margin-bottom: 15px;
+            border: 1px solid #bdc3c7;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        button {
+            background-color: #3498db;
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #2980b9;
+        }
+
+        .prediction-result {
+            margin-top: 20px;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .prediction-result.popular {
+            color: #27ae60;
+        }
+
+        .prediction-result.not-popular {
+            color: #e74c3c;
+        }
+    </style>
+</head>
+<body>
+    <h1>Online News Popularity Prediction Form</h1>
+    
+    <form id="predictionForm" method="post" action="/predict">
+        {% if error %}<p style="color: #e74c3c; text-align: center;">Error: {{ error }}</p>{% endif %}
+        {% if prediction is defined %}
+            <p class="prediction-result {% if prediction == 'Popular' %}popular{% else %}not-popular{% endif %}">
+                Prediction Result: {{ prediction }}
+            </p>
+        {% endif %}
+
+        <label for="timedelta">Timedelta:</label> <input type="text" name="value" id="timedelta" required>
+        <label for="n_tokens_title">Number of Tokens in Title:</label> <input type="text" name="value" id="n_tokens_title" required>
+        <label for="n_tokens_content">Number of Tokens in Content:</label> <input type="text" name="value" id="n_tokens_content" required>
+        <label for="n_unique_tokens">Number of Unique Tokens:</label> <input type="text" name="value" id="n_unique_tokens" required>
+        <label for="num_hrefs">Number of Hrefs:</label> <input type="text" name="value" id="num_hrefs" required>
+        <label for="num_self_hrefs">Number of Self Hrefs:</label> <input type="text" name="value" id="num_self_hrefs" required>
+        <label for="num_imgs">Number of Images:</label> <input type="text" name="value" id="num_imgs" required>
+        <label for="num_videos">Number of Videos:</label> <input type="text" name="value" id="num_videos" required>
+        <label for="average_token_length">Average Token Length:</label> <input type="text" name="value" id="average_token_length" required>
+        <label for="num_keywords">Number of Keywords:</label> <input type="text" name="value" id="num_keywords" required>
+        <label for="kw_min_avg">Minimum Keyword Average:</label> <input type="text" name="value" id="kw_min_avg" required>
+        <label for="kw_max_avg">Maximum Keyword Average:</label> <input type="text" name="value" id="kw_max_avg" required>
+        <label for="kw_avg_avg">Average Keyword Average:</label> <input type="text" name="value" id="kw_avg_avg" required>
+        <label for="self_reference_avg_sharess">Self Reference Average Shares:</label> <input type="text" name="value" id="self_reference_avg_sharess" required>
+        <label for="global_subjectivity">Global Subjectivity:</label> <input type="text" name="value" id="global_subjectivity" required>
+        <label for="global_sentiment_polarity">Global Sentiment Polarity:</label> <input type="text" name="value" id="global_sentiment_polarity" required>
+        <label for="global_rate_positive_words">Global Rate Positive Words:</label> <input type="text" name="value" id="global_rate_positive_words" required>
+        <label for="global_rate_negative_words">Global Rate Negative Words:</label> <input type="text" name="value" id="global_rate_negative_words" required>
+        <label for="avg_positive_polarity">Average Positive Polarity:</label> <input type="text" name="value" id="avg_positive_polarity" required>
+        <label for="avg_negative_polarity">Average Negative Polarity:</label> <input type="text" name="value" id="avg_negative_polarity" required>
+        <label for="title_subjectivity">Title Subjectivity:</label> <input type="text" name="value" id="title_subjectivity" required>
+        <label for="title_sentiment_polarity">Title Sentiment Polarity:</label> <input type="text" name="value" id="title_sentiment_polarity" required>
+        <label for="abs_title_sentiment_polarity">Absolute Title Sentiment Polarity:</label> <input type="text" name="value" id="abs_title_sentiment_polarity" required>
+        <label for="theme">Theme:</label> <input type="text" name="value" id="theme" required>
+        <label for="weekday">Weekday:</label> <input type="text" name="value" id="weekday" required>
+        <button type="submit">Predict</button>
+    </form>
+</body>
+</html>
