@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Feature Prediction Form</title>
+    <style>
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+                background-color: #f2f2f2;
+                margin: 0;
+                padding: 0;
+            }
+
+            h1 {
+                color: #333;
+                text-align: center;
+                margin-top: 50px;
+            }
+
+            form {
+                max-width: 500px;
+                margin: 0 auto;
+                padding: 20px;
+                background-color: #fff;
+                border-radius: 5px;
+                box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            }
+
+            label {
+                display: block;
+                margin-bottom: 10px;
+                font-weight: bold;
+            }
+
+            input[type="text"] {
+                width: 100%;
+                padding: 10px;
+                border: 1px solid #ccc;
+                border-radius: 4px;
+                box-sizing: border-box;
+                margin-bottom: 20px;
+            }
+
+            button[type="submit"] {
+                background-color: #4CAF50;
+                color: white;
+                padding: 10px 20px;
+                border: none;
+                border-radius: 4px;
+                cursor: pointer;
+                font-size: 16px;
+            }
+
+            .prediction-result {
+                text-align: center;
+                font-weight: bold;
+                margin-top: 20px;
+            }
+
+            .popular {
+                color: green;
+            }
+
+            .not-popular {
+                color: red;
+            }
+        </style>
+    </style>
+</head>
+<body>
+    <h1>TItanic survival form</h1>
+    
+    <form id="predictionForm" method="post" action="/predict">
+       
+
+        <label for="sex">Sex:</label>
+        <select name="sex" id="sex" required>
+            <option value="1">Male</option>
+            <option value="0">Female</option>
+        </select>
+
+        <label for="age">Age:</label> <input type="text" name="age" id="age" required>
+        <label for="fare">Fare:</label> <input type="text" name="fare" id="fare" required>
+
+        <label for="adult_male">Adult Male:</label>
+        <select name="adult_male" id="adult_male" required>
+            <option value="1">Yes</option>
+            <option value="0">No</option>
+        </select>
+
+        <label for="pclass">Pclass:</label>
+        <select name="pclass" id="pclass" required>
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+        </select>
+        
+        <button type="submit">Predict</button>
+    </form>
+    
+    
+    {% if knn_prediction or rf_prediction or svm_prediction %}
+    <div id="predictionResult" style="display: none;">
+        {% if knn_prediction %}
+        <p>K-Nearest Neighbors Prediction: {{ knn_prediction }}</p>
+        {% endif %}
+        {% if rf_prediction %}
+        <p>Random Forest Prediction: {{ rf_prediction }}</p>
+        {% endif %}
+        {% if svm_prediction %}
+        <p>Support Vector Machine Prediction: {{ svm_prediction }}</p>
+        {% endif %}
+    </div>
+
+    <script>
+        document.getElementById("predictionForm").addEventListener("submit", function(event) {
+            event.preventDefault(); // Prevent form submission and page reload
+
+            // Get form data
+            var form = document.getElementById("predictionForm");
+            var formData = new FormData(form);
+
+            // Make AJAX request to /predict endpoint
+            var request = new XMLHttpRequest();
+            request.open("POST", "/predict");
+            request.onreadystatechange = function() {
+                if (request.readyState === 4 && request.status === 200) {
+                    // Update predictions and form data
+                    var response = JSON.parse(request.responseText);
+                    document.getElementById("predictionResult").innerHTML = response.html;
+                }
+            };
+            request.send(formData);
+        });
+    </script>
+</body>
+</html>
