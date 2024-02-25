@@ -9,43 +9,49 @@ CORS(app)
 with open('Random Forest_model.pkl', 'rb') as file:
     model_rf = pickle.load(file)
     
-with open('K-Nearest Neighbors_model.pkl', 'rb') as file:
-    model_kn = pickle.load(file)
 
-with open('Support Vector Machine_model.pkl', 'rb') as file:
-    model_svm = pickle.load(file)
-    
 
-@app.route('/')
-def index():
-    return render_template('indexe.html')
-
-@app.route('/predict', methods=['POST'])
+@app.route('/predict/', methods=['GET'])
 def predict():
     try:
-        features = request.form.to_dict(flat=False)
-        print(features)
-    
-        feature_values = [float(value) for value in features['value']]
-        feature_array = np.array([feature_values])
+        
+        sex = int(request.args.get('sex'))
+        age = float(request.args.get('age'))
+        fare = float(request.args.get('fare'))
+        adult_male = int(request.args.get('adult_male'))
+        pclass = int(request.args.get('pclass'))
+        
+        if pclass == 1:
+            pclass_1 = 1
+            pclass_2 = 0
+            pclass_3 = 0
+        elif pclass == 2:
+            pclass_1 = 0
+            pclass_2 = 1
+            pclass_3 = 0
+        else:
+            pclass_1 = 0
+            pclass_2 = 0
+            pclass_3 = 1
+            
+        
+        feature_array = np.array([[sex, age, fare, adult_male, pclass_1,pclass_2,pclass_3]])
 
         prediction_rf = model_rf.predict(feature_array)
-        prediction_kn = model_kn.predict(feature_array)
-        prediction_svm = model_svm.predict(feature_array)
 
         prediction_rf_text = 'Alive' if prediction_rf[0] == 1 else 'Dead'
-        prediction_kn_text = 'Alive' if prediction_kn[0] == 1 else 'Dead'
-        prediction_svm_text = 'Alive' if prediction_svm[0] == 1 else 'Dead'
+        
+        print(f"Prediction Random Forest: {prediction_rf_text}")
+        
+        response = {
+            'prediction_rf': prediction_rf_text,
+            'probability': model_rf.predict_proba(feature_array).tolist()
+        }
 
-        return render_template(
-            'indexe.html',
-            prediction_rf=prediction_rf_text,
-            prediction_kn=prediction_kn_text,
-            prediction_svm=prediction_svm_text
-        )
+        return jsonify(response)
 
     except Exception as e:
-        return render_template('indexe.html', error=str(e))
+        return jsonify({'error': str(e)})
 
 
 @app.after_request
