@@ -3,83 +3,50 @@ from flask_cors import CORS
 import pickle
 import numpy as np
 
-
 app = Flask(__name__)
 CORS(app)
 
-# Load the models
-with open('K-Nearest_Neighbors_model.pkl', 'rb') as file:
-    knn_model = pickle.load(file)
+with open('Random Forest_model.pkl', 'rb') as file:
+    model_rf = pickle.load(file)
+    
+with open('K-Nearest Neighbors_model.pkl', 'rb') as file:
+    model_kn = pickle.load(file)
 
-with open('Random_Forest_model.pkl', 'rb') as file:
-    rf_model = pickle.load(file)
-
-with open('Support_Vector_Machine_model.pkl', 'rb') as file:
-    svm_model = pickle.load(file)
-
+with open('Support Vector Machine_model.pkl', 'rb') as file:
+    model_svm = pickle.load(file)
+    
 
 @app.route('/')
 def index():
     return render_template('indexe.html')
 
 @app.route('/predict', methods=['POST'])
-@app.route('/predict', methods=['POST'])
 def predict():
     try:
         features = request.form.to_dict(flat=False)
+        print(features)
+    
+        feature_values = [float(value) for value in features['value']]
+        feature_array = np.array([feature_values])
 
-        # Extract feature values
-        sex = int(features['sex'][0])
-        age = float(features['age'][0])
-        fare = float(features['fare'][0])
-        adult_male = int(features['adult_male'][0])
-        pclass = int(features['pclass'][0])
+        prediction_rf = model_rf.predict(feature_array)
+        prediction_kn = model_kn.predict(feature_array)
+        prediction_svm = model_svm.predict(feature_array)
 
-        if pclass == 1:
-            pclass_1 = 1
-            pclass_2 = 0
-            pclass_3 = 0
-        elif pclass == 2:
-            pclass_1 = 0
-            pclass_2 = 1
-            pclass_3 = 0
-        else:
-            pclass_1 = 0
-            pclass_2 = 0
-            pclass_3 = 1
-
-        # Create feature array
-        feature_array = np.array([[sex, age, fare, adult_male, pclass_1, pclass_2, pclass_3]])
-
-        # Make the predictions
-        knn_prediction = knn_model.predict(feature_array)
-        rf_prediction = rf_model.predict(feature_array)
-        svm_prediction = svm_model.predict(feature_array)
-
-        # Convert predictions to readable labels
-        prediction_dict = {
-            0: 'Dead',
-            1: 'Alive'
-        }
-
-        knn_prediction = prediction_dict[knn_prediction[0]]
-        rf_prediction = prediction_dict[rf_prediction[0]]
-        svm_prediction = prediction_dict[svm_prediction[0]]
-        
-        print(feature_array)
-        
-        print(knn_prediction, rf_prediction, svm_prediction)
+        prediction_rf_text = 'Alive' if prediction_rf[0] == 1 else 'Dead'
+        prediction_kn_text = 'Alive' if prediction_kn[0] == 1 else 'Dead'
+        prediction_svm_text = 'Alive' if prediction_svm[0] == 1 else 'Dead'
 
         return render_template(
             'indexe.html',
-            knn_prediction=knn_prediction,
-            rf_prediction=rf_prediction,
-            svm_prediction=svm_prediction,
-            form_data=features  # Pass the form data back to the template
+            prediction_rf=prediction_rf_text,
+            prediction_kn=prediction_kn_text,
+            prediction_svm=prediction_svm_text
         )
 
     except Exception as e:
         return render_template('indexe.html', error=str(e))
+
 
 @app.after_request
 def add_header(response):
