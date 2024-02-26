@@ -6,7 +6,7 @@ import numpy as np
 app = Flask(__name__)
 CORS(app)
 
-with open('Random Forest_model.pkl', 'rb') as file:
+with open('SVM_model.pkl', 'rb') as file:
     model_rf = pickle.load(file)
     
 
@@ -41,10 +41,10 @@ def predict():
 
         prediction_rf_text = 'Alive' if prediction_rf[0] == 1 else 'Dead'
         
-        print(f"Prediction Random Forest: {prediction_rf_text}")
+        print(f"Prediction SVM: {prediction_rf_text}")
         
         response = {
-            'prediction_rf': prediction_rf_text,
+            'prediction_svm': prediction_rf_text,
             'probability': model_rf.predict_proba(feature_array).tolist()
         }
 
