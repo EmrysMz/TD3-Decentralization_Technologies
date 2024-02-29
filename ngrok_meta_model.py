@@ -7,6 +7,47 @@ victor_url = "https://f1cc-89-30-29-68.ngrok-free.app/"
 
 urls = [emrys_url, louis_url, victor_url]
 
+models_balance_file = 'models_balance.json'
+
+
+def load_model_balances():
+    try:
+        with open(models_balance_file, 'r') as file:
+            model_balances = json.load(file)
+    except FileNotFoundError:
+        model_balances = {}
+    return model_balances
+
+def save_model_balances(model_balances):
+    with open(models_balance_file, 'w') as file:
+        json.dump(model_balances, file)
+
+def register_model(model_name, initial_deposit):
+    model_balances = load_model_balances()
+    if model_name in model_balances:
+        print(f"Model '{model_name}' is already registered.")
+    else:
+        model_balances[model_name] = float(initial_deposit)
+        save_model_balances(model_balances)
+        print(f"Model '{model_name}' registered successfully with an initial deposit of {initial_deposit} euros.")
+
+def slash_model(model_name, slashing_amount):
+    model_balances = load_model_balances()
+    if model_name in model_balances:
+        model_balances[model_name] = max(model_balances[model_name] - float(slashing_amount), 0)
+        save_model_balances(model_balances)
+        print(f"Model '{model_name}' has been slashed by {slashing_amount} euros.")
+    else:
+        print(f"Model '{model_name}' is not registered.")
+
+
+def get_model_balance(model_name):
+    model_balances = load_model_balances()
+    if model_name in model_balances:
+        return model_balances[model_name]
+    else:
+        return 0
+
 test_params = [
     {
         'sex': 0,
@@ -48,35 +89,58 @@ test_params = [
 def get_predictions(urls, params_list):
     predictions = [[] for _ in urls]
     weights = [[1.0] * len(urls) for _ in params_list]  # Initialize weights with equal values
-    
+
     for i, params in enumerate(params_list):
         for j, url in enumerate(urls):
             response = requests.get(url + '/predict/', params=params)
             predictions[j].append(response.json())
-            
+
             # Update weights based on the accuracy of each model
             if i > 0:
                 consensus_prob = sum([pred['probability'][0][1] for pred in predictions[j][:i]]) / i
                 individual_prob = predictions[j][i]['probability'][0][1]
                 weights[i][j] = individual_prob / consensus_prob
-                
+
         # Normalize weights to ensure they are between 0 and 1
         weight_sum = sum(weights[i])
         weights[i] = [weight / weight_sum for weight in weights[i]]
-    
+
+        # Slash the model's deposit if accuracy is consistently low
+        if i > 0:
+            for j, model in enumerate(model_balances.keys()):
+                if predictions[j][i]['probability'][0][1] < consensus_prob:
+                    slashing_amount = 1000 * 0.1  # Slashing 10% of the initial deposit
+                    slash_model(model, slashing_amount)
+
     alive_probs = []
     dead_probs = []
-    
+
     for i, params in enumerate(params_list):
         alive_prob = sum([pred['probability'][0][1] * weight for pred, weight in zip(predictions[j], weights[i])]) / sum(weights[i])
         dead_prob = sum([pred['probability'][0][0] * weight for pred, weight in zip(predictions[j], weights[i])]) / sum(weights[i])
-        
+
         alive_probs.append(alive_prob)
         dead_probs.append(dead_prob)
-    
+
     return alive_probs, dead_probs, weights
 
+
+
+
+register_model("Random_Forest", 1000)
+register_model("KNN", 1000)
+register_model("SVM", 1000)
+
+
+
+
+
 alive_probs, dead_probs, weights = get_predictions(urls, test_params)
+
+
+
+
+
 
 for i, params in enumerate(test_params):
     print(f"Test {i+1}:")
@@ -85,3 +149,9 @@ for i, params in enumerate(test_params):
     print(f"Dead probability: {dead_probs[i]}")
     print(f"Weights: {weights[i]}")
     print()
+    
+    
+
+model_balances = load_model_balances()
+for model, balance in model_balances.items():
+    print(f"Model: {model}, Balance: {balance}")
