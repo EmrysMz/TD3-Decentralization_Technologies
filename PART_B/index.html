@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Shopping Cart</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
+</head>
+<body>
+<div class="container mt-5">
+    <h1>Shopping Cart</h1>
+    <div id="cartItems"></div>
+    <div class="mt-3" id="totalPrice"></div>
+</div>
+
+<script>
+    function fetchCartItems(userId) {
+        fetch(`/cart/${userId}`)
+            .then(response => response.json())
+            .then(data => {
+                const cartItems = data.products;
+                const totalPrice = data.totalPrice;
+
+                const cartItemsContainer = document.getElementById('cartItems');
+                const totalPriceContainer = document.getElementById('totalPrice');
+
+                cartItemsContainer.innerHTML = '';
+                totalPriceContainer.innerHTML = '';
+
+                if (cartItems.length === 0) {
+                    cartItemsContainer.innerHTML = '<p>Cart is empty</p>';
+                } else {
+                    cartItems.forEach(item => {
+                        const cartItemElement = document.createElement('div');
+                        cartItemElement.classList.add('card', 'mb-3');
+
+                        const cardBodyElement = document.createElement('div');
+                        cardBodyElement.classList.add('card-body');
+
+                        const productNameElement = document.createElement('h5');
+                        productNameElement.classList.add('card-title');
+                        productNameElement.textContent = item.name;
+
+                        const quantityElement = document.createElement('p');
+                        quantityElement.classList.add('card-text');
+                        quantityElement.textContent = `Quantity: ${item.quantity}`;
+
+                        cardBodyElement.appendChild(productNameElement);
+                        cardBodyElement.appendChild(quantityElement);
+                        cartItemElement.appendChild(cardBodyElement);
+                        cartItemsContainer.appendChild(cartItemElement);
+                    });
+                }
+
+                totalPriceContainer.innerHTML = `<p>Total Price: $${totalPrice.toFixed(2)}</p>`;
+            })
+            .catch(error => {
+                console.error('Error fetching cart items:', error);
+            });
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const userId = 1;
+        fetchCartItems(userId);
+    });
+</script>
+</body>
+</html>
